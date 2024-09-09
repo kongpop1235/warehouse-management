@@ -1,7 +1,5 @@
-// controllers/productController.js
 const Product = require('../models/Product');
 
-// สร้างสินค้าใหม่
 exports.createProduct = async (req, res) => {
     try {
         const product = new Product(req.body);
@@ -12,7 +10,6 @@ exports.createProduct = async (req, res) => {
     }
 };
 
-// ดึงข้อมูลสินค้าทั้งหมด
 exports.getProducts = async (req, res) => {
     try {
         const products = await Product.find();
@@ -22,7 +19,6 @@ exports.getProducts = async (req, res) => {
     }
 };
 
-// ดึงข้อมูลสินค้าตาม ID
 exports.getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
@@ -33,7 +29,6 @@ exports.getProductById = async (req, res) => {
     }
 };
 
-// อัปเดตข้อมูลสินค้า
 exports.updateProduct = async (req, res) => {
     try {
         const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
@@ -44,7 +39,6 @@ exports.updateProduct = async (req, res) => {
     }
 };
 
-// ลบสินค้า
 exports.deleteProduct = async (req, res) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
