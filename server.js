@@ -2,6 +2,7 @@ const express = require('express');
 const connectDB = require('./database');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.use('/api/auth', authRoutes);
 app.get('/', (req, res) => {
     res.send('Warehouse Management API is running');
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
