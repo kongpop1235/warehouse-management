@@ -3,10 +3,17 @@ const connectDB = require('./database');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const errorHandler = require('./middleware/errorHandler');
+const cors = require('cors');
 
 const app = express();
 
 connectDB();
+
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+}));
 
 app.use(express.json());
 

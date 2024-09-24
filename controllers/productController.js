@@ -6,7 +6,7 @@ exports.createProduct = async (req, res, next) => {
         await product.save();
         res.status(201).json(product);
     } catch (error) {
-        next(error); // ส่งต่อข้อผิดพลาดไปยัง Error Handler
+        next(error);
     }
 };
 
@@ -22,10 +22,11 @@ exports.getProducts = async (req, res, next) => {
 exports.getProductById = async (req, res, next) => {
     try {
         const product = await Product.findById(req.params.id);
+
         if (!product) {
-            res.status(404);
-            throw new Error('Product not found');
+            return res.status(404).json({ message: 'Product not found' });
         }
+
         res.json(product);
     } catch (error) {
         next(error);
@@ -34,11 +35,15 @@ exports.getProductById = async (req, res, next) => {
 
 exports.updateProduct = async (req, res, next) => {
     try {
-        const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true,
+        });
+
         if (!product) {
-            res.status(404);
-            throw new Error('Product not found');
+            return res.status(404).json({ message: 'Product not found' });
         }
+
         res.json(product);
     } catch (error) {
         next(error);
@@ -48,10 +53,11 @@ exports.updateProduct = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
     try {
         const product = await Product.findByIdAndDelete(req.params.id);
+
         if (!product) {
-            res.status(404);
-            throw new Error('Product not found');
+            return res.status(404).json({ message: 'Product not found' });
         }
+
         res.json({ message: 'Product deleted' });
     } catch (error) {
         next(error);
