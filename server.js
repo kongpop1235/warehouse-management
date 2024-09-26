@@ -2,6 +2,7 @@ const express = require('express');
 const connectDB = require('./database');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const cors = require('cors');
 
@@ -19,6 +20,7 @@ app.use(express.json());
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
 
 app.get('/', (req, res) => {
     res.send('Warehouse Management API is running');
