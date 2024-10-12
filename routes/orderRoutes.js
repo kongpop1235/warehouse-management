@@ -12,4 +12,12 @@ router.get('/', protect, authorize('admin'), orderController.getOrders);
 // Shows the order history of one customer. (Required to login)
 // router.get('/history/:customerId', protect, orderController.getOrderHistory);
 
+router.get('/:id', protect, orderController.getOrderById);
+
+router.put('/:id/status', protect, authorize('admin'), orderController.updateOrderStatus);
+
+router.put('/:id/cancel', protect, orderController.cancelOrder);
+
+router.delete('/:id', protect, authorize('admin'), orderController.deleteOrder);
+
 module.exports = router;
