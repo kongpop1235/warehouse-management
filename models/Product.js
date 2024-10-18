@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true }, // ชื่อสินค้า
     description: { type: String }, // รายละเอียดสินค้า
-    category: { type: String, required: true }, // หมวดหมู่สินค้า
+    category: [{ type: String, required: true }], // หมวดหมู่สินค้า
     tags: [{ type: String, required: true }], // แท็กสินค้า
     price: { type: Number, required: true }, // ราคาหลัก
     discountPrice: { type: Number }, // ราคาหลังหักส่วนลด (ถ้ามี)
