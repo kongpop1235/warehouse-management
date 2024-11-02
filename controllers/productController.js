@@ -12,8 +12,22 @@ exports.createProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
     try {
-        const products = await Product.find();
-        res.json(products);
+        const products = await Product.find()
+            .populate('category')
+            .populate('tags');
+        // Adjust data before sending back
+        const productsWithReducedFields = products.map(product => {
+            // Reduce data in category to include only name.
+            const categoryName = product.category ? product.category.name : null;
+            // Reduce information in tags to include only name.
+            const tagsNames = product.tags ? product.tags.map(tag => tag.name) : [];
+            return {
+                ...product.toObject(),
+                category: categoryName,
+                tags: tagsNames
+            };
+        });
+        res.json(productsWithReducedFields);
     } catch (error) {
         next(error);
     }

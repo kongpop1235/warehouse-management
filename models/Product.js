@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String },
-    category: { type: String, required: true },
-    tags: [{ type: String, required: true }],
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],
     price: { type: Number, required: true },
     discountPrice: { type: Number },
     discountPercentage: { type: Number },
