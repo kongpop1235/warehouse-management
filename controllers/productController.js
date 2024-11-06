@@ -1,8 +1,9 @@
 const Product = require('../models/product');
 const Tag = require('../models/tag');
+const Category = require('../models/category');
 
 function extractTagIds(tags) {
-    return tags.map(tag => tag.$oid || tag); // Verify existence of $oid
+    return tags.map(tag => tag.$oid || tag);
 }
 
 async function addProductReferenceToTags(productId, tagIds) {
@@ -19,16 +20,31 @@ async function removeProductReferenceFromTags(productId, tagIds) {
     );
 }
 
+async function addProductReferenceToCategory(productId, categoryId) {
+    await Category.findByIdAndUpdate(
+        categoryId,
+        { $addToSet: { referencedProducts: productId } }
+    );
+}
+
+async function removeProductReferenceFromCategory(productId, categoryId) {
+    await Category.findByIdAndUpdate(
+        categoryId,
+        { $pull: { referencedProducts: productId } }
+    );
+}
+
 exports.createProduct = async (req, res, next) => {
     try {
-        // Separate `tags` into a usable format.
+        // Separate `tags` and `category` into usable formats.
         req.body.tags = extractTagIds(req.body.tags);
 
         const product = new Product(req.body);
         await product.save();
 
-        // Update references in `Tag`
+        // Update references in `Tag` and `Category`
         await addProductReferenceToTags(product._id, product.tags);
+        await addProductReferenceToCategory(product._id, product.category);
 
         res.status(201).json(product);
     } catch (error) {
@@ -41,11 +57,9 @@ exports.getProducts = async (req, res, next) => {
         const products = await Product.find()
             .populate('category')
             .populate('tags');
-        // Adjust data before sending back
+
         const productsWithReducedFields = products.map(product => {
-            // Reduce data in category to include only name.
             const categoryName = product.category ? product.category.name : null;
-            // Reduce information in tags to include only name.
             const tagsNames = product.tags ? product.tags.map(tag => tag.name) : [];
             return {
                 ...product.toObject(),
@@ -80,18 +94,20 @@ exports.updateProduct = async (req, res, next) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        // Delete old references that are no longer used in `Tag`.
+        // Remove old references in `Tag` and `Category`
         await removeProductReferenceFromTags(existingProduct._id, existingProduct.tags);
+        await removeProductReferenceFromCategory(existingProduct._id, existingProduct.category);
 
         // Update new information
-        req.body.tags = extractTagIds(req.body.tags);  // Convert tags to an array of IDs.
+        req.body.tags = extractTagIds(req.body.tags);
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true,
         });
 
-        // Updated new references in `Tag`.
+        // Add new references in `Tag` and `Category`
         await addProductReferenceToTags(updatedProduct._id, updatedProduct.tags);
+        await addProductReferenceToCategory(updatedProduct._id, updatedProduct.category);
 
         res.json(updatedProduct);
     } catch (error) {
@@ -99,7 +115,7 @@ exports.updateProduct = async (req, res, next) => {
     }
 };
 
-// Delete the product and remove references in the `Tag`.
+// Delete the product and remove references in `Tag` and `Category`.
 exports.deleteProduct = async (req, res, next) => {
     try {
         const product = await Product.findById(req.params.id);
@@ -108,6 +124,8 @@ exports.deleteProduct = async (req, res, next) => {
         }
 
         await removeProductReferenceFromTags(product._id, product.tags);
+        await removeProductReferenceFromCategory(product._id, product.category);
+
         await product.remove();
         res.json({ message: 'Product deleted' });
     } catch (error) {
