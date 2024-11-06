@@ -4,7 +4,14 @@ const Tag = require('../models/Tag');
 exports.createTag = async (req, res, next) => {
     try {
         const { name, description } = req.body;
-        const tag = new Tag({ name, description });
+        const tag = new Tag({
+            name: {
+                en: name.en,
+                th: name.th
+            },
+            description
+        });
+
         await tag.save();
         res.status(201).json(tag);
     } catch (error) {

@@ -1,9 +1,35 @@
 const Product = require('../models/product');
+const Tag = require('../models/tag');
+
+function extractTagIds(tags) {
+    return tags.map(tag => tag.$oid || tag); // Verify existence of $oid
+}
+
+async function addProductReferenceToTags(productId, tagIds) {
+    await Tag.updateMany(
+        { _id: { $in: tagIds } },
+        { $addToSet: { referencedProducts: productId } }
+    );
+}
+
+async function removeProductReferenceFromTags(productId, tagIds) {
+    await Tag.updateMany(
+        { _id: { $in: tagIds } },
+        { $pull: { referencedProducts: productId } }
+    );
+}
 
 exports.createProduct = async (req, res, next) => {
     try {
+        // Separate `tags` into a usable format.
+        req.body.tags = extractTagIds(req.body.tags);
+
         const product = new Product(req.body);
         await product.save();
+
+        // Update references in `Tag`
+        await addProductReferenceToTags(product._id, product.tags);
+
         res.status(201).json(product);
     } catch (error) {
         next(error);
