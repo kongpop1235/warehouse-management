@@ -46,7 +46,29 @@ exports.createProduct = async (req, res, next) => {
         await addProductReferenceToTags(product._id, product.tags);
         await addProductReferenceToCategory(product._id, product.category);
 
-        res.status(201).json(product);
+        // Populate category and tags to retrieve full data including `th`, `en`, and `id`
+        const populatedProduct = await Product.findById(product._id)
+            .populate('category', 'name')
+            .populate('tags', 'name');
+
+        // Structure the data to include only `th`, `en`, and `id` for tags and category
+        const formattedProduct = {
+            ...populatedProduct.toObject(),
+            category: populatedProduct.category
+                ? {
+                    id: populatedProduct.category._id,
+                    en: populatedProduct.category.name.en,
+                    th: populatedProduct.category.name.th,
+                }
+                : null,
+            tags: populatedProduct.tags.map(tag => ({
+                id: tag._id,
+                en: tag.name.en,
+                th: tag.name.th,
+            })),
+        };
+
+        res.status(201).json(formattedProduct);
     } catch (error) {
         next(error);
     }
