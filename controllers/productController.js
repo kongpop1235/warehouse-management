@@ -77,19 +77,26 @@ exports.createProduct = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
     try {
         const products = await Product.find()
-            .populate('category')
-            .populate('tags');
+            .populate('category', 'name')
+            .populate('tags', 'name');
 
-        const productsWithReducedFields = products.map(product => {
-            const categoryName = product.category ? product.category.name : null;
-            const tagsNames = product.tags ? product.tags.map(tag => tag.name) : [];
-            return {
-                ...product.toObject(),
-                category: categoryName,
-                tags: tagsNames
-            };
-        });
-        res.json(productsWithReducedFields);
+        const productsWithFormattedFields = products.map(product => ({
+            ...product.toObject(),
+            category: product.category
+                ? {
+                    id: product.category._id,
+                    en: product.category.name.en,
+                    th: product.category.name.th,
+                }
+                : null,
+            tags: product.tags.map(tag => ({
+                id: tag._id,
+                en: tag.name.en,
+                th: tag.name.th,
+            })),
+        }));
+
+        res.json(productsWithFormattedFields);
     } catch (error) {
         next(error);
     }
