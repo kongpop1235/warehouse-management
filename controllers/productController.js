@@ -77,8 +77,8 @@ exports.createProduct = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
     try {
         const products = await Product.find()
-            .populate('category', 'name')
-            .populate('tags', 'name');
+            .populate('category', 'name description')
+            .populate('tags', 'name description');
 
         const productsWithFormattedFields = products.map(product => ({
             ...product.toObject(),
@@ -87,12 +87,14 @@ exports.getProducts = async (req, res, next) => {
                     id: product.category._id,
                     en: product.category.name.en,
                     th: product.category.name.th,
+                    description: product.category.description
                 }
                 : null,
             tags: product.tags.map(tag => ({
                 id: tag._id,
                 en: tag.name.en,
                 th: tag.name.th,
+                description: tag.description
             })),
         }));
 
