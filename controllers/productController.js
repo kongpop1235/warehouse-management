@@ -140,7 +140,26 @@ exports.updateProduct = async (req, res, next) => {
         await addProductReferenceToTags(updatedProduct._id, updatedProduct.tags);
         await addProductReferenceToCategory(updatedProduct._id, updatedProduct.category);
 
-        res.json(updatedProduct);
+        const populatedProduct = await Product.findById(updatedProduct._id)
+            .populate('category', 'name')
+            .populate('tags', 'name');
+
+        const formattedProduct = {
+            ...populatedProduct.toObject(),
+            category: populatedProduct.category
+                ? {
+                    id: populatedProduct.category._id,
+                    en: populatedProduct.category.name.en,
+                    th: populatedProduct.category.name.th,
+                }
+                : null,
+            tags: populatedProduct.tags.map(tag => ({
+                id: tag._id,
+                en: tag.name.en,
+                th: tag.name.th,
+            })),
+        };
+        res.json(formattedProduct);
     } catch (error) {
         next(error);
     }
