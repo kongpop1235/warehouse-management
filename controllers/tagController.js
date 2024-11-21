@@ -41,3 +41,16 @@ exports.getTagById = async (req, res, next) => {
         next(error);
     }
 };
+
+// Delete a tag by ID
+exports.deleteTag = async (req, res, next) => {
+    try {
+        const tag = await Tag.findByIdAndDelete(req.params.id);
+        if (!tag) {
+            return res.status(404).json({ message: 'Tag not found' });
+        }
+        res.status(200).json({ message: 'Tag deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+};

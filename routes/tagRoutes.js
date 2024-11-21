@@ -12,4 +12,7 @@ router.get('/', protect, tagController.getTags);
 // Route to get tag by ID
 router.get('/:id', protect, tagController.getTagById);
 
+// Route to delete a tag (Only Admin)
+router.delete('/:id', protect, authorize('admin'), tagController.deleteTag);
+
 module.exports = router;
