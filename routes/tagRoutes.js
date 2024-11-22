@@ -12,6 +12,9 @@ router.get('/', protect, tagController.getTags);
 // Route to get tag by ID
 router.get('/:id', protect, tagController.getTagById);
 
+// Route to update a tag (Only Admin)
+router.put('/:id', protect, authorize('admin'), tagController.updateTag);
+
 // Route to delete a tag (Only Admin)
 router.delete('/:id', protect, authorize('admin'), tagController.deleteTag);
 

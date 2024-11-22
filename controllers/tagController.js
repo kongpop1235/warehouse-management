@@ -42,6 +42,27 @@ exports.getTagById = async (req, res, next) => {
     }
 };
 
+// Update a tag by ID
+exports.updateTag = async (req, res, next) => {
+    try {
+        const { name, description } = req.body;
+
+        const tag = await Tag.findById(req.params.id);
+        if (!tag) {
+            return res.status(404).json({ message: 'Tag not found' });
+        }
+
+        tag.name.en = name.en;
+        tag.name.th = name.th;
+        tag.description = description;
+
+        await tag.save();
+        res.status(200).json(tag);
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Delete a tag by ID
 exports.deleteTag = async (req, res, next) => {
     try {
