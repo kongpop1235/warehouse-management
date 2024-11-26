@@ -5,6 +5,7 @@ const authRoutes = require('./routes/authRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const tagRoutes = require('./routes/tagRoutes');
+const supplierRoutes = require('./routes/supplierRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const cors = require('cors');
 
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/suppliers', supplierRoutes);
 
 app.get('/', (req, res) => {
     res.send('Warehouse Management API is running');
