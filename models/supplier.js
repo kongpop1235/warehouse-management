@@ -33,6 +33,7 @@ const SupplierSchema = new mongoose.Schema(
             enum: ['Active', 'Inactive'],
             default: 'Active',
         },
+        referencedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
     },
     { timestamps: true }
 );

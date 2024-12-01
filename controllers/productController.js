@@ -1,6 +1,7 @@
 const Product = require('../models/product');
 const Tag = require('../models/tag');
 const Category = require('../models/category');
+const Supplier = require('../models/supplier');
 
 function extractTagIds(tags) {
     return tags.map(tag => tag.$oid || tag);
@@ -34,6 +35,24 @@ async function removeProductReferenceFromCategory(productId, categoryId) {
     );
 }
 
+async function addProductReferenceToSupplier(productId, supplierId) {
+    if (supplierId) {
+        await Supplier.findByIdAndUpdate(
+            supplierId,
+            { $addToSet: { referencedProducts: productId } }
+        );
+    }
+}
+
+async function removeProductReferenceFromSupplier(productId, supplierId) {
+    if (supplierId) {
+        await Supplier.findByIdAndUpdate(
+            supplierId,
+            { $pull: { referencedProducts: productId } }
+        );
+    }
+}
+
 exports.createProduct = async (req, res, next) => {
     try {
         // Separate `tags` and `category` into usable formats.
@@ -42,16 +61,18 @@ exports.createProduct = async (req, res, next) => {
         const product = new Product(req.body);
         await product.save();
 
-        // Update references in `Tag` and `Category`
+        // Update references in `Tag`, `Category`, and `Supplier`
         await addProductReferenceToTags(product._id, product.tags);
         await addProductReferenceToCategory(product._id, product.category);
+        await addProductReferenceToSupplier(product._id, product.supplier);
 
-        // Populate category and tags to retrieve full data including `th`, `en`, and `id`
+        // Populate category, tags, and supplier to retrieve full data
         const populatedProduct = await Product.findById(product._id)
             .populate('category', 'name')
-            .populate('tags', 'name');
+            .populate('tags', 'name')
+            .populate('supplier', 'name status');
 
-        // Structure the data to include only `th`, `en`, and `id` for tags and category
+        // Structure the data to include only relevant fields
         const formattedProduct = {
             ...populatedProduct.toObject(),
             category: populatedProduct.category
@@ -66,6 +87,13 @@ exports.createProduct = async (req, res, next) => {
                 en: tag.name.en,
                 th: tag.name.th,
             })),
+            supplier: populatedProduct.supplier
+                ? {
+                    id: populatedProduct.supplier._id,
+                    name: populatedProduct.supplier.name,
+                    status: populatedProduct.supplier.status,
+                }
+                : null,
         };
 
         res.status(201).json(formattedProduct);
@@ -78,7 +106,8 @@ exports.getProducts = async (req, res, next) => {
     try {
         const products = await Product.find()
             .populate('category', 'name description')
-            .populate('tags', 'name description');
+            .populate('tags', 'name description')
+            .populate('supplier', 'name description');
 
         const productsWithFormattedFields = products.map(product => ({
             ...product.toObject(),
@@ -96,6 +125,13 @@ exports.getProducts = async (req, res, next) => {
                 th: tag.name.th,
                 description: tag.description
             })),
+            supplier: product.supplier
+                ? {
+                    id: product.supplier._id,
+                    name: product.supplier.name,
+                    description: product.supplier.description
+                }
+                : null,
         }));
 
         res.json(productsWithFormattedFields);
@@ -128,6 +164,7 @@ exports.updateProduct = async (req, res, next) => {
         // Remove old references in `Tag` and `Category`
         await removeProductReferenceFromTags(existingProduct._id, existingProduct.tags);
         await removeProductReferenceFromCategory(existingProduct._id, existingProduct.category);
+        await removeProductReferenceFromSupplier(existingProduct._id, existingProduct.supplier);
 
         // Update new information
         req.body.tags = extractTagIds(req.body.tags);
@@ -139,6 +176,7 @@ exports.updateProduct = async (req, res, next) => {
         // Add new references in `Tag` and `Category`
         await addProductReferenceToTags(updatedProduct._id, updatedProduct.tags);
         await addProductReferenceToCategory(updatedProduct._id, updatedProduct.category);
+        await addProductReferenceToSupplier(updatedProduct._id, updatedProduct.supplier);
 
         const populatedProduct = await Product.findById(updatedProduct._id)
             .populate('category', 'name')
@@ -175,6 +213,7 @@ exports.deleteProduct = async (req, res, next) => {
 
         await removeProductReferenceFromTags(product._id, product.tags);
         await removeProductReferenceFromCategory(product._id, product.category);
+        await removeProductReferenceFromSupplier(product._id, product.supplier);
 
         await product.deleteOne();
         res.json({ message: 'Product deleted' });

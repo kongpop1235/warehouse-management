@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema({
     stockQuantity: { type: Number, required: true },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
-    supplier: { type: String },
+    supplier: { type: mongoose.Schema.Types.ObjectId, ref: 'Supplier' },
     barcode: { type: String },
     costPrice: { type: Number, required: true },
     productURL: { type: String },
