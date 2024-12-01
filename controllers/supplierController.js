@@ -64,10 +64,23 @@ exports.updateSupplier = async (req, res, next) => {
 // Delete supplier by ID
 exports.deleteSupplier = async (req, res, next) => {
     try {
-        const supplier = await Supplier.findByIdAndDelete(req.params.id);
+        // Find the supplier by ID
+        const supplier = await Supplier.findById(req.params.id);
+
         if (!supplier) {
             return res.status(404).json({ message: 'Supplier not found' });
         }
+
+        // Check if the supplier has any referencedProducts
+        if (supplier.referencedProducts.length > 0) {
+            return res.status(400).json({
+                message: 'Cannot delete supplier because there are referenced products.'
+            });
+        }
+
+        // If no referenced products, proceed to delete
+        await supplier.deleteOne();
+
         res.status(200).json({ message: 'Supplier deleted successfully' });
     } catch (error) {
         next(error);
