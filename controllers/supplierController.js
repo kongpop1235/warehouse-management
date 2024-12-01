@@ -34,6 +34,17 @@ exports.getSupplierById = async (req, res, next) => {
     }
 };
 
+// Get only ID, name, and status of all suppliers
+exports.getSupplierIdsAndStatuses = async (req, res, next) => {
+    try {
+        const suppliers = await Supplier.find({ status: 'Active' }, '_id name status');
+        res.status(200).json(suppliers);
+    } catch (error) {
+        console.error('Error fetching suppliers:', error);
+        next(error);
+    }
+};
+
 // Update supplier by ID
 exports.updateSupplier = async (req, res, next) => {
     try {
