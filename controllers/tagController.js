@@ -1,4 +1,4 @@
-const Tag = require('../models/Tag');
+const Tag = require('../models/tag');
 
 // Create a new tag
 exports.createTag = async (req, res, next) => {
@@ -9,7 +9,11 @@ exports.createTag = async (req, res, next) => {
                 en: name.en,
                 th: name.th
             },
-            description
+            description,
+            createdBy: {
+                userId: req.user.userId,
+                username: req.user.username
+            }
         });
 
         await tag.save();
@@ -56,6 +60,13 @@ exports.updateTag = async (req, res, next) => {
         tag.name.th = name.th;
         tag.description = description;
 
+
+        tag.updatedBy = {
+            userId: req.user.userId,
+            username: req.user.username,
+            updatedAt: new Date(),
+        };
+
         await tag.save();
         res.status(200).json(tag);
     } catch (error) {
@@ -66,26 +77,11 @@ exports.updateTag = async (req, res, next) => {
 // Delete a tag by ID
 exports.deleteTag = async (req, res, next) => {
     try {
-        const { id } = req.params;
-
-        // Find the tag by ID
-        const tag = await Tag.findById(id);
-
+        const tag = await Tag.findByIdAndDelete(req.params.id);
         if (!tag) {
-            return res.status(404).json({ message: "tags.alert.notFound" });
+            return res.status(404).json({ message: 'Tag not found' });
         }
-
-        // Check if the tag is referenced by any products
-        if (tag.referencedProducts && tag.referencedProducts.length > 0) {
-            return res.status(400).json({
-                message: "tags.alert.referenced"
-            });
-        }
-
-        // Proceed with deletion if no references exist
-        await Tag.findByIdAndDelete(id);
-
-        res.status(200).json({ message: "tags.deleteSuccess" });
+        res.status(200).json({ message: 'Tag deleted successfully' });
     } catch (error) {
         next(error);
     }
