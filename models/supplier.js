@@ -33,7 +33,17 @@ const SupplierSchema = new mongoose.Schema(
             enum: ['Active', 'Inactive'],
             default: 'Active',
         },
-        referencedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
+        referencedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+        createdBy: {
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            username: { type: String, required: true },
+            createdAt: { type: Date, default: Date.now },
+        },
+        updatedBy: {
+            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            username: { type: String },
+            updatedAt: { type: Date },
+        }
     },
     { timestamps: true }
 );

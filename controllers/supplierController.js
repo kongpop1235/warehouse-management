@@ -3,7 +3,13 @@ const Supplier = require('../models/supplier');
 // Create a new supplier
 exports.createSupplier = async (req, res, next) => {
     try {
-        const supplier = new Supplier(req.body);
+        const supplier = new Supplier({
+            ...req.body,
+            createdBy: {
+                userId: req.user.userId,
+                username: req.user.username,
+            },
+        });
         await supplier.save();
         res.status(201).json(supplier);
     } catch (error) {
@@ -48,13 +54,21 @@ exports.getSupplierIdsAndStatuses = async (req, res, next) => {
 // Update supplier by ID
 exports.updateSupplier = async (req, res, next) => {
     try {
-        const supplier = await Supplier.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true,
-        });
+        const supplier = await Supplier.findById(req.params.id);
         if (!supplier) {
             return res.status(404).json({ message: 'Supplier not found' });
         }
+
+        Object.assign(supplier, req.body);
+
+        supplier.updatedBy = {
+            userId: req.user.userId,
+            username: req.user.username,
+            updatedAt: new Date(),
+        };
+
+        await supplier.save();
+
         res.status(200).json(supplier);
     } catch (error) {
         next(error);
