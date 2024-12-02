@@ -4,7 +4,13 @@ const Category = require('../models/Category');
 exports.createCategory = async (req, res, next) => {
     try {
         const { name, description } = req.body;
-        const category = new Category({ name, description });
+        const category = new Category({
+            name, description,
+            createdBy: {
+                userId: req.user.userId,
+                username: req.user.username
+            }
+        });
         await category.save();
         res.status(201).json(category);
     } catch (error) {
@@ -41,15 +47,20 @@ exports.updateCategory = async (req, res, next) => {
         const { id } = req.params;
         const { name, description } = req.body;
 
-        const category = await Category.findByIdAndUpdate(
-            id,
-            { name, description },
-            { new: true, runValidators: true }
-        );
-
+        const category = await Category.findById(id);
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
+
+        category.name = name;
+        category.description = description;
+        category.updatedBy = {
+            userId: req.user.userId,
+            username: req.user.username,
+            updatedAt: new Date(),
+        };
+
+        await category.save();
 
         res.status(200).json(category);
     } catch (error) {
