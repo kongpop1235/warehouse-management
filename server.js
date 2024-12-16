@@ -6,6 +6,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const tagRoutes = require('./routes/tagRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
+const productOrderHistoryRoutes = require('./routes/productOrderHistoryRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const cors = require('cors');
@@ -28,6 +29,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/suppliers', supplierRoutes);
+app.use('/api/product-order-history', productOrderHistoryRoutes);
 app.use('/api/customers', customerRoutes);
 
 app.get('/', (req, res) => {
